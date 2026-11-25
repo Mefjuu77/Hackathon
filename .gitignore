@@ -4,4 +4,4 @@ runs/
 __pycache__/
 .pytest_cache/
 .idea/
-.claude/settings.local.json
+.claude/
