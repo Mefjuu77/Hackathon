@@ -16,6 +16,12 @@ def test_static_files_are_served():
     assert client.get("/static/app.js").status_code == 200
 
 
+def test_scenarios_endpoint():
+    scenarios = client.get("/api/scenarios").json()
+    assert [s["id"] for s in scenarios] == ["S1", "S2", "S3", "S4"]
+    assert all(s["title"] for s in scenarios)
+
+
 def test_settings_defaults(monkeypatch):
     for name in ("ELEVENLABS_API_BASE", "MAX_CONVERSATION_SECONDS", "EL_MAX_DURATION_SECONDS"):
         monkeypatch.delenv(name, raising=False)
