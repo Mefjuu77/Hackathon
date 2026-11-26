@@ -153,7 +153,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         await pump
         try:
             await websocket.close()
-        except RuntimeError:
+        except (RuntimeError, WebSocketDisconnect):  # the browser may be gone already
             pass
 
     return app
