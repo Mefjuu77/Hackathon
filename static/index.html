@@ -2,10 +2,55 @@
 <html lang="pl">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Klient vs Help Desk</title>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <h1>Klient vs Help Desk</h1>
+  <header>
+    <h1>Klient vs Help Desk</h1>
+    <p id="run-info" class="muted"></p>
+  </header>
+
+  <section id="controls" class="panel">
+    <label class="slider">
+      <span>Klient NPS <output id="nps-value">3</output></span>
+      <input id="nps" type="range" min="1" max="10" value="3">
+    </label>
+    <label class="slider">
+      <span>Konsultant CX <output id="cx-value">8</output></span>
+      <input id="cx" type="range" min="1" max="10" value="8">
+    </label>
+    <label>
+      <span>Scenariusz</span>
+      <select id="scenario"><option value="random">Losuj</option></select>
+    </label>
+    <div class="buttons">
+      <button id="start" type="button">▶ Start rozmowy</button>
+      <button id="stop" type="button" disabled>⏹ Stop</button>
+    </div>
+  </section>
+
+  <section id="replay-controls" class="panel" hidden>
+    <span>Odtwarzanie zapisanego przebiegu <code id="replay-id"></code></span>
+    <button id="replay-start" type="button">▶ Odtwórz</button>
+  </section>
+
+  <p id="error" class="error" hidden></p>
+
+  <main>
+    <section class="panel">
+      <h2>🔊 Transkrypt na żywo <span id="status" class="muted"></span></h2>
+      <ol id="transcript"></ol>
+    </section>
+    <section class="panel">
+      <h2>Nastrój klienta</h2>
+      <div id="mood"></div>
+    </section>
+  </main>
+
+  <section id="summary" class="panel" hidden></section>
+
   <script src="/static/app.js"></script>
 </body>
 </html>

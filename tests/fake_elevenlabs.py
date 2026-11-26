@@ -89,14 +89,17 @@ class FakeElevenLabs:
             },
         }))
         reader = asyncio.create_task(self._read(ws, agent))
+        script = asyncio.create_task(self._run_steps(ws, agent))
+        await reader  # the client closing the socket ends the script, even mid-sleep
+        script.cancel()
         try:
-            for step in agent.steps:
-                await self._step(ws, agent, step)
-            await reader
-        except websockets.ConnectionClosed:
+            await script
+        except (asyncio.CancelledError, websockets.ConnectionClosed):
             pass
-        finally:
-            reader.cancel()
+
+    async def _run_steps(self, ws: ServerConnection, agent: FakeAgent) -> None:
+        for step in agent.steps:
+            await self._step(ws, agent, step)
 
     async def _read(self, ws: ServerConnection, agent: FakeAgent) -> None:
         loop = asyncio.get_running_loop()

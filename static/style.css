@@ -1,0 +1,51 @@
+:root {
+  --customer: #2563eb;
+  --helpdesk: #059669;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: #111827;
+  background: #f9fafb;
+}
+
+[hidden] { display: none !important; }
+
+body { max-width: 1100px; margin: 0 auto; padding: 1rem 1.5rem 3rem; }
+header { display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; }
+h1 { font-size: 1.5rem; margin: 0.5rem 0; }
+h2 { font-size: 1rem; margin: 0 0 0.75rem; }
+.muted { color: var(--muted); font-weight: normal; }
+
+.panel { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin: 0.75rem 0; }
+
+#controls { display: flex; flex-wrap: wrap; gap: 1.25rem; align-items: end; }
+#controls label { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.9rem; }
+.slider input { width: 200px; }
+output { font-weight: 600; }
+.buttons { display: flex; gap: 0.5rem; margin-left: auto; }
+button { font: inherit; padding: 0.45rem 1rem; border-radius: 6px; border: 1px solid #d1d5db; background: #fff; cursor: pointer; }
+button:not(:disabled):hover { background: #f3f4f6; }
+button:disabled { opacity: 0.5; cursor: default; }
+#start, #replay-start { background: #111827; color: #fff; border-color: #111827; }
+#start:not(:disabled):hover, #replay-start:not(:disabled):hover { background: #374151; }
+#replay-controls { display: flex; align-items: center; justify-content: space-between; }
+
+.error { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; border-radius: 8px; padding: 0.6rem 1rem; }
+
+main { display: grid; grid-template-columns: 3fr 2fr; gap: 0.75rem; }
+main .panel { margin: 0; }
+@media (max-width: 800px) { main { grid-template-columns: 1fr; } }
+
+#transcript { list-style: none; margin: 0; padding: 0; height: 26rem; overflow-y: auto; }
+#transcript li { padding: 0.4rem 0.5rem; border-left: 3px solid transparent; margin-bottom: 0.25rem; line-height: 1.4; }
+#transcript li.customer { border-color: var(--customer); }
+#transcript li.helpdesk { border-color: var(--helpdesk); background: #f0fdf4; }
+#transcript .who { font-weight: 600; }
+#transcript .customer .who { color: var(--customer); }
+#transcript .helpdesk .who { color: var(--helpdesk); }
+#transcript .time { color: var(--muted); font-size: 0.75rem; margin-left: 0.4rem; }
+.tag { display: inline-block; font-size: 0.72rem; color: var(--muted); background: #f3f4f6; border-radius: 4px; padding: 0 0.3rem; margin-right: 0.25rem; font-style: italic; }
+.interrupted { color: #b45309; font-size: 0.8rem; margin-left: 0.4rem; }
+.empty { color: var(--muted); font-style: italic; }
+
+#mood { min-height: 26rem; }
