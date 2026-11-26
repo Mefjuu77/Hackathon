@@ -1,7 +1,7 @@
 "use strict";
 
 const SAMPLE_RATE = 16000;
-const LEAD_SECONDS = 0.2;
+const LEAD_SECONDS = 0.3;
 const ROLE_LABELS = { customer: "👤 Klient", helpdesk: "🎧 Konsultant" };
 const END_REASONS = {
   customer_end_call: "Klient zakończył rozmowę",
@@ -19,43 +19,54 @@ const replayId = replayMatch ? decodeURIComponent(replayMatch[1]) : null;
 
 // --- Audio ---------------------------------------------------------------
 
-/** Plays 100 ms stereo PCM16 frames back to back, LEAD_SECONDS ahead of real time. */
+/**
+ * Streams 100 ms stereo PCM16 frames into one continuous worklet output.
+ * The context runs at 16 kHz, so the browser resamples a single stream, not each frame.
+ */
 class StereoPlayer {
-  constructor() {
-    this.ctx = new AudioContext();
-    this.nextTime = 0;
+  static async create() {
+    const ctx = new AudioContext({ sampleRate: SAMPLE_RATE, latencyHint: "playback" });
+    await ctx.audioWorklet.addModule("/static/player-worklet.js");
+    const node = new AudioWorkletNode(ctx, "stereo-stream", {
+      numberOfInputs: 0,
+      outputChannelCount: [2],
+      processorOptions: { leadSamples: Math.round(LEAD_SECONDS * SAMPLE_RATE) },
+    });
+    node.connect(ctx.destination);
+    return new StereoPlayer(ctx, node);
+  }
+
+  constructor(ctx, node) {
+    this.ctx = ctx;
+    this.node = node;
+    this.underruns = 0; // inspect in the console when audio stutters
+    node.port.onmessage = ({ data }) => { this.underruns = data.underruns; };
   }
 
   reset() {
-    this.nextTime = 0;
+    this.underruns = 0;
+    this.node.port.postMessage({ type: "reset" });
     return this.ctx.resume();
   }
 
   push(arrayBuffer) {
     const pcm = new Int16Array(arrayBuffer);
     const frames = pcm.length / 2;
-    const buffer = this.ctx.createBuffer(2, frames, SAMPLE_RATE);
-    const left = buffer.getChannelData(0);
-    const right = buffer.getChannelData(1);
+    const left = new Float32Array(frames);
+    const right = new Float32Array(frames);
     for (let i = 0; i < frames; i++) {
       left[i] = pcm[2 * i] / 32768;
       right[i] = pcm[2 * i + 1] / 32768;
     }
-    const source = this.ctx.createBufferSource();
-    source.buffer = buffer;
-    source.connect(this.ctx.destination);
-    if (this.nextTime < this.ctx.currentTime) {
-      this.nextTime = this.ctx.currentTime + LEAD_SECONDS; // underrun: restart with a lead
-    }
-    source.start(this.nextTime);
-    this.nextTime += buffer.duration;
+    this.node.port.postMessage({ left, right }, [left.buffer, right.buffer]);
   }
 }
 
 let player = null;
 
 async function preparePlayer() {
-  player ??= new StereoPlayer(); // created on a click: browsers require a user gesture
+  player ??= await StereoPlayer.create(); // created on a click: browsers require a user gesture
+  window.player = player;
   await player.reset();
 }
 
