@@ -15,14 +15,13 @@ from app.config import load_settings  # noqa: E402
 
 PASS, FAIL, MANUAL = "PASS", "FAIL", "MANUAL"
 
+# `ping` and `client_tool_call` are not selectable in the dashboard; they are always sent.
 REQUIRED_CLIENT_EVENTS = {
     "audio",
     "agent_response",
     "agent_response_correction",
     "user_transcript",
     "interruption",
-    "ping",
-    "client_tool_call",
     "agent_tool_response",
 }
 EXPECTED_FIRST_MESSAGE = {"customer": "{{first_message}}", "helpdesk": ""}
@@ -133,6 +132,7 @@ def fetch_tools(client: httpx.Client, config: dict) -> list[dict] | None:
 
 
 def main() -> int:
+    sys.stdout.reconfigure(encoding="utf-8")  # Windows consoles default to a legacy code page
     settings = load_settings()
     try:
         settings.require_elevenlabs()

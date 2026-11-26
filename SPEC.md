@@ -90,7 +90,7 @@ Prompty i tabele: `PROMPT_CUSTOMER.md`, `PROMPT_HELPDESK.md`. Claude Code nie ko
 | A8 | Client tool `report_mood` (`score` integer, `reason` string), `expects_response = false` | ✅ | — |
 | A9 | Overrides włączone: `tts.stability`, `tts.speed`, `conversation.max_duration_seconds` | ✅ | ✅ |
 | A10 | `platform_settings.auth.enable_auth = true` (agent prywatny) | ✅ | ✅ |
-| A11 | `conversation.client_events` zawiera: `audio`, `agent_response`, `agent_response_correction`, `user_transcript`, `interruption`, `ping`, `client_tool_call`, `agent_tool_response` | ✅ | ✅ |
+| A11 | `conversation.client_events` zawiera: `audio`, `agent_response`, `agent_response_correction`, `user_transcript`, `interruption`, `agent_tool_response` (opcjonalnie `agent_tool_request` — tylko do logów). `ping` i `client_tool_call` nie są do wyboru w panelu — EL wysyła je zawsze | ✅ | ✅ |
 | A12 | `turn.turn_timeout = 10` | ✅ | ✅ |
 | A13 | `turn.silence_end_call_timeout = -1` (wyłączony) | ✅ | ✅ |
 

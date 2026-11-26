@@ -43,6 +43,7 @@ async def ignore_audio(_: bytes) -> None:
 
 
 async def main() -> int:
+    sys.stdout.reconfigure(encoding="utf-8")  # Windows consoles default to a legacy code page
     parser = argparse.ArgumentParser()
     parser.add_argument("--nps", type=int, required=True, choices=content.LEVELS)
     parser.add_argument("--cx", type=int, required=True, choices=content.LEVELS)

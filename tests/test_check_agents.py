@@ -68,7 +68,7 @@ VIOLATIONS = [
     ("A9", "platform_settings.overrides.conversation_config_override.tts.speed", False),
     ("A9", "platform_settings.overrides.conversation_config_override.conversation.max_duration_seconds", False),
     ("A10", "platform_settings.auth.enable_auth", False),
-    ("A11", "conversation_config.conversation.client_events", ["audio", "ping"]),
+    ("A11", "conversation_config.conversation.client_events", ["audio", "ping", "client_tool_call"]),
     ("A12", "conversation_config.turn.turn_timeout", 7),
     ("A13", "conversation_config.turn.silence_end_call_timeout", 20),
 ]
