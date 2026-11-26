@@ -9,7 +9,7 @@ client = TestClient(app)
 def test_index_serves_page():
     response = client.get("/")
     assert response.status_code == 200
-    assert "Klient vs Help Desk" in response.text
+    assert "Customer vs Help Desk" in response.text
 
 
 def test_static_files_are_served():

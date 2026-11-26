@@ -30,9 +30,9 @@ async def print_event(event: dict) -> None:
         case "interruption":
             print(f"         ⤳ przerwano: {LABELS[event['role']]}")
         case "mood":
-            print(f"         nastrój: {event['score']} ({event['reason']})")
+            print(f"         mood: {event['score']} ({event['reason']})")
         case "error":
-            print(f"✖ Błąd: {event['message']}")
+            print(f"✖ Error: {event['message']}")
         case "run_ended":
             print(f"■ Koniec: {event['end_reason']}")
             print(json.dumps(event["summary"], ensure_ascii=False, indent=2))
