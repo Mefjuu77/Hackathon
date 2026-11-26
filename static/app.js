@@ -132,12 +132,109 @@ function markInterrupted({ role }) {
   li.append(mark);
 }
 
-// --- Mood (chart arrives in E4) -------------------------------------------
+// --- Mood chart ----------------------------------------------------------
 
+let moodChart = null;
+
+/** Splits a long reason into tooltip lines (Chart.js does not wrap text). */
+function wrapLines(text, width = 48) {
+  const lines = [];
+  let line = "";
+  for (const word of text.split(" ")) {
+    if (line && line.length + word.length + 1 > width) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = line ? `${line} ${word}` : word;
+    }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+function initMoodChart() {
+  if (!window.Chart) {
+    $("mood").textContent = "Brak pliku static/vendor/chart.umd.min.js — wykres nastroju niedostępny.";
+    return;
+  }
+  moodChart = new Chart($("mood-chart"), {
+    type: "line",
+    data: { datasets: [{ data: [], borderColor: "#2563eb", backgroundColor: "#2563eb", pointRadius: 4, pointHoverRadius: 6, clip: false }] },
+    options: {
+      maintainAspectRatio: false,
+      parsing: false,
+      scales: {
+        x: { type: "linear", min: 0, suggestedMax: 5, ticks: { stepSize: 1, precision: 0 }, title: { display: true, text: "wypowiedź konsultanta" } },
+        y: { min: 1, max: 10, ticks: { stepSize: 1 }, title: { display: true, text: "nastrój" } },
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          displayColors: false,
+          callbacks: {
+            title: ([item]) => (item.raw.x === 0 ? "Start" : `Wypowiedź ${item.raw.x}`),
+            label: (item) => [`${item.raw.y}/10`, ...(item.raw.x === 0 ? [] : wrapLines(item.raw.reason))],
+          },
+        },
+      },
+    },
+  });
+}
+
+/** Several reports after the same helpdesk utterance: the latest one wins (summary.json keeps all). */
 function addMood({ turn, score, reason }) {
-  const line = document.createElement("div");
-  line.textContent = `wypowiedź ${turn}: ${score}/10 — ${reason}`;
-  $("mood").append(line);
+  if (!moodChart) return;
+  const points = moodChart.data.datasets[0].data;
+  const point = { x: turn, y: score, reason };
+  const index = points.findIndex((p) => p.x === turn);
+  if (index >= 0) points[index] = point; else points.push(point);
+  moodChart.update();
+}
+
+function resetMood() {
+  if (!moodChart) return;
+  moodChart.data.datasets[0].data = [];
+  moodChart.update();
+}
+
+// --- Summary bar ---------------------------------------------------------
+
+function formatDuration(seconds) {
+  const total = Math.round(seconds);
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
+}
+
+function showSummary({ end_reason, summary, files }) {
+  if (!summary) return;
+  const box = $("summary");
+  box.replaceChildren();
+  const add = (className, text) => {
+    const span = document.createElement("span");
+    span.className = className;
+    span.textContent = text;
+    box.append(span);
+    return span;
+  };
+  const isError = end_reason === "error";
+  add(isError ? "reason failed" : "reason", isError ? `Błąd: ${summary.error ?? "nieznany"}` : END_REASONS[end_reason] ?? end_reason);
+  add("item", `⏱ ${formatDuration(summary.duration_s)}`);
+  add("item", `tury: klient ${summary.turns.customer} / konsultant ${summary.turns.helpdesk}`);
+  add("item", `przerwania: klient ${summary.interruptions.customer} / konsultant ${summary.interruptions.helpdesk}`);
+  const { start, end, delta } = summary.mood;
+  const sign = delta > 0 ? `+${delta}` : delta < 0 ? `−${-delta}` : "±0";
+  add(`item mood ${delta > 0 ? "up" : delta < 0 ? "down" : ""}`, `nastrój ${start} → ${end} (${sign})`);
+  const links = document.createElement("span");
+  links.className = "links";
+  for (const [key, label] of [["audio", "⬇ audio.wav"], ["transcript", "⬇ transcript.json"]]) {
+    if (!files?.[key]) continue;
+    const link = document.createElement("a");
+    link.href = files[key];
+    link.download = "";
+    link.textContent = label;
+    links.append(link);
+  }
+  box.append(links);
+  box.hidden = false;
 }
 
 // --- Run state -----------------------------------------------------------
@@ -158,7 +255,7 @@ function resetView() {
   utterances.clear();
   for (const role in lastByRole) delete lastByRole[role];
   $("transcript").replaceChildren();
-  $("mood").replaceChildren();
+  resetMood();
   $("summary").hidden = true;
   $("run-info").textContent = "";
   showError("");
@@ -192,6 +289,7 @@ function handleEvent(event) {
       break;
     case "run_ended":
       $("status").textContent = `— ${END_REASONS[event.end_reason] ?? event.end_reason}`;
+      showSummary(event);
       break;
   }
 }
@@ -285,4 +383,5 @@ function initReplay() {
   });
 }
 
+initMoodChart();
 if (replayId) initReplay(); else initLive();

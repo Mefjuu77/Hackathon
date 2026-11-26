@@ -48,4 +48,13 @@ main .panel { margin: 0; }
 .interrupted { color: #b45309; font-size: 0.8rem; margin-left: 0.4rem; }
 .empty { color: var(--muted); font-style: italic; }
 
-#mood { min-height: 26rem; }
+#mood { position: relative; height: 26rem; }
+
+#summary { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.25rem; }
+#summary .reason { font-weight: 600; }
+#summary .reason.failed { color: #b91c1c; }
+#summary .mood.up { color: var(--helpdesk); font-weight: 600; }
+#summary .mood.down { color: #b91c1c; font-weight: 600; }
+#summary .links { display: flex; gap: 1rem; margin-left: auto; }
+#summary a { color: var(--customer); text-decoration: none; }
+#summary a:hover { text-decoration: underline; }

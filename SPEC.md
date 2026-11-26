@@ -25,7 +25,7 @@ Tester ustawia poziom zadowolenia klienta (NPS 1–10), poziom obsługi konsulta
 - Python 3.14, `uv`. Uruchomienie: `uv run uvicorn app.main:app --reload`.
 - Zależności: `fastapi`, `uvicorn[standard]`, `websockets`, `httpx`, `python-dotenv`. Dev: `pytest`, `pytest-asyncio`.
 - Audio wyłącznie stdlib (`array`, `wave`, `base64`). Uwaga: `audioop` nie istnieje w 3.13+.
-- Frontend: czysty HTML/JS (bez frameworka i bundlera), Web Audio API, Chart.js z CDN.
+- Frontend: czysty HTML/JS (bez frameworka i bundlera), Web Audio API, Chart.js 4.5.0 w repo (`static/vendor/`, demo działa bez internetu).
 - Identyfikatory i komentarze w kodzie po angielsku; wszystkie teksty UI po polsku.
 - Klient EL na surowych `websockets` (bez SDK `elevenlabs`).
 - Usuń szablonowy `main.py` z katalogu głównego.
