@@ -6,7 +6,7 @@ from app import content
 from app.bridge import Bridge, EmitAudio, EmitEvent
 from app.config import Settings
 
-ALREADY_RUNNING = "Rozmowa już trwa"
+ALREADY_RUNNING = "A conversation is already running"
 
 
 class RunManager:

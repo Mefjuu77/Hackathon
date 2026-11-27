@@ -1,7 +1,6 @@
 import asyncio
 import json
 import logging
-import re
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
@@ -12,10 +11,9 @@ from app.config import PROJECT_ROOT, Settings, load_settings
 from app.content import SCENARIOS
 from app.replay import replay_run
 from app.run_manager import ALREADY_RUNNING, RunManager
-from app.run_store import RUN_FILES
+from app.run_store import RUN_FILES, RUN_ID_PATTERN, list_runs
 
 STATIC_DIR = PROJECT_ROOT / "static"
-RUN_ID_PATTERN = re.compile(r"^[A-Za-z0-9_-]+$")
 
 log = logging.getLogger(__name__)
 
@@ -53,11 +51,11 @@ def parse_start(message: dict) -> tuple[int, int, content.Scenario]:
     for key in ("nps_level", "cx_level"):
         value = message.get(key)
         if not isinstance(value, int) or isinstance(value, bool) or value not in content.LEVELS:
-            raise ValueError(f"Niepoprawna wartość {key}: {value!r} (oczekiwano 1–10)")
+            raise ValueError(f"Invalid value for {key}: {value!r} (expected 1–10)")
         levels.append(value)
     scenario_id = message.get("scenario_id", "random")
     if scenario_id != "random" and scenario_id not in SCENARIOS:
-        raise ValueError(f"Nieznany scenariusz: {scenario_id!r}")
+        raise ValueError(f"Unknown scenario: {scenario_id!r}")
     return levels[0], levels[1], content.pick_scenario(scenario_id)
 
 
@@ -82,7 +80,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.get("/api/scenarios")
     async def list_scenarios() -> list[dict]:
-        return [{"id": s.id, "title": s.title} for s in SCENARIOS.values()]
+        return [{"id": s.id, "title": s.display_title} for s in SCENARIOS.values()]
+
+    @app.get("/api/runs")
+    async def list_saved_runs() -> list[dict]:
+        return list_runs(settings.runs_dir, {s.id: s.display_title for s in SCENARIOS.values()})
 
     @app.get("/replay/{run_id}", include_in_schema=False)
     async def replay_page(run_id: str) -> FileResponse:
@@ -108,7 +110,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 try:
                     message = json.loads(await websocket.receive_text())
                 except json.JSONDecodeError:
-                    await connection.send_json({"type": "error", "message": "Niepoprawna wiadomość (oczekiwano JSON)"})
+                    await connection.send_json({"type": "error", "message": "Invalid message (expected JSON)"})
                     continue
                 match message.get("type") if isinstance(message, dict) else None:
                     case "start":
@@ -116,7 +118,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     case "stop":
                         manager.stop(connection)
                     case other:
-                        await connection.send_json({"type": "error", "message": f"Nieznana komenda: {other!r}"})
+                        await connection.send_json({"type": "error", "message": f"Unknown command: {other!r}"})
         except WebSocketDisconnect:
             pass
         finally:
@@ -142,7 +144,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         try:
             run_dir = run_dir_or_404(run_id)
         except HTTPException:
-            await connection.send_json({"type": "error", "message": f"Nie znaleziono przebiegu {run_id}"})
+            await connection.send_json({"type": "error", "message": f"Run not found: {run_id}"})
         else:
             replay_task = asyncio.create_task(replay_run(run_dir, connection.send_json, connection.send_bytes))
             closed = asyncio.create_task(wait_for_disconnect(websocket))

@@ -90,6 +90,7 @@ HELPDESK_PERSONA_TEXTS = {1: 'Jesteś niegrzeczny, znudzony i niecierpliwy. Nie 
 
 SCENARIO_DATA = {'S1': {'id': 'S1',
         'title': 'Technical — brak internetu',
+        'display_title': 'Technical — no internet',
         'customer_name': 'Marek Nowak',
         'scenario': 'Od wczoraj wieczorem nie działa Ci internet stacjonarny w domu. Pracujesz '
                     'zdalnie i dziś nie mogłeś normalnie pracować.',
@@ -118,6 +119,7 @@ SCENARIO_DATA = {'S1': {'id': 'S1',
                                'ewentualnie proponuje rekompensatę za przestój.'},
  'S2': {'id': 'S2',
         'title': 'Contract / Billing — zawyżona faktura',
+        'display_title': 'Contract / Billing — inflated invoice',
         'customer_name': 'Andrzej Kowalski',
         'scenario': 'Dostałeś fakturę za ostatni miesiąc na 138 zł, a zwykle płacisz 89 zł. Nie '
                     'rozumiesz, skąd ta różnica.',
@@ -149,6 +151,7 @@ SCENARIO_DATA = {'S1': {'id': 'S1',
                                'woli.'},
  'S3': {'id': 'S3',
         'title': 'Services — roaming i pakiet danych przed wyjazdem',
+        'display_title': 'Services — roaming and data plan before a trip',
         'customer_name': 'Piotr Wiśniewski',
         'scenario': 'Za tydzień lecisz na 2 tygodnie do Tajlandii i chcesz mieć internet w '
                     'telefonie, ale boisz się wysokich rachunków.',
@@ -184,6 +187,7 @@ SCENARIO_DATA = {'S1': {'id': 'S1',
                                'po wyczerpaniu pakietu, żeby uniknąć powtórki z Turcji.'},
  'S4': {'id': 'S4',
         'title': 'Complaint — nierozwiązane zgłoszenie',
+        'display_title': 'Complaint — unresolved ticket',
         'customer_name': 'Krzysztof Zieliński',
         'scenario': 'Od 3 tygodni masz bardzo słaby zasięg w mieszkaniu, rozmowy się zrywają. '
                     'Zgłaszałeś to już dwa razy i nic się nie zmieniło.',
@@ -249,6 +253,7 @@ class Scenario:
     first_messages: dict[str, str]  # keys: low (NPS 1-3), mid (4-7), high (8-10)
     crm_data: str
     expected_resolution: str  # evaluation only, never sent to agents
+    display_title: str = ""  # English title for the web UI/API; `title` mirrors the Polish prompt docs
 
 
 SCENARIOS: dict[str, Scenario] = {sid: Scenario(**data) for sid, data in SCENARIO_DATA.items()}

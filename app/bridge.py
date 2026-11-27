@@ -130,7 +130,7 @@ class Bridge:
                     "type": "run_started",
                     "run_id": self.run_id,
                     "scenario_id": self.scenario.id,
-                    "scenario_title": self.scenario.title,
+                    "scenario_title": self.scenario.display_title,
                     "nps_level": self.nps_level,
                     "cx_level": self.cx_level,
                     "customer_name": self.scenario.customer_name,

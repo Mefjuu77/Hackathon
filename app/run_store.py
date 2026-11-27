@@ -1,6 +1,7 @@
 """Files of a single run: audio.wav, events.jsonl, transcript.json, summary.json."""
 
 import json
+import re
 import time
 import wave
 from datetime import datetime
@@ -9,6 +10,45 @@ from pathlib import Path
 from app.audio import SAMPLE_RATE, SAMPLE_WIDTH
 
 RUN_FILES = ("audio.wav", "events.jsonl", "transcript.json", "summary.json")
+RUN_ID_PATTERN = re.compile(r"^[A-Za-z0-9_-]+$")
+REPLAYABLE_FILES = ("summary.json", "audio.wav", "events.jsonl")
+
+
+def _started_at(run_id: str) -> str | None:
+    try:
+        return datetime.strptime(run_id[:15], "%Y%m%d-%H%M%S").isoformat()
+    except ValueError:
+        return None
+
+
+def list_runs(runs_dir: Path, scenario_titles: dict[str, str]) -> list[dict]:
+    """Replayable runs (summary.json, audio.wav and events.jsonl present), newest first."""
+    if not runs_dir.is_dir():
+        return []
+    runs = []
+    for path in runs_dir.iterdir():
+        if not RUN_ID_PATTERN.match(path.name) or not all((path / name).is_file() for name in REPLAYABLE_FILES):
+            continue
+        try:
+            summary = json.loads((path / "summary.json").read_text(encoding="utf-8"))
+            mood = summary["mood"]
+            turns = summary["turns"]
+            scenario_id = summary["scenario_id"]
+            runs.append({
+                "run_id": path.name,
+                "scenario_id": scenario_id,
+                "scenario_title": scenario_titles.get(scenario_id),
+                "nps_level": summary["nps_level"],
+                "cx_level": summary["cx_level"],
+                "end_reason": summary["end_reason"],
+                "duration_s": summary["duration_s"],
+                "turns": {"customer": turns["customer"], "helpdesk": turns["helpdesk"]},
+                "mood": {"start": mood["start"], "end": mood["end"], "delta": mood["delta"]},
+                "started_at": _started_at(path.name),
+            })
+        except (OSError, ValueError, KeyError, TypeError):
+            continue  # unreadable or malformed summary: not replayable
+    return sorted(runs, key=lambda run: run["run_id"], reverse=True)
 
 
 class RunStore:
